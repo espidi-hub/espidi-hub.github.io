@@ -21,7 +21,7 @@
     {
       "id": "redsea",
       "name": "RED SEA",
-      "version": "1.1 beta",
+      "version": "1.1 beta 2",
       "channel": "beta",
       "author": "Daniil Vlasenko",
       "summary": {
@@ -29,31 +29,31 @@
         "ru": "1.0 плюс MIDI-каналы на каждый параметр, длина нот, Freeze Roll, свинг и движок TWST. В тестировании."
       },
       "source": "Cirocular-Vlasenko-Daniil/Red-Sea@beta",
-      "file": "redsea-1.1-beta.bin",
-      "cover": "redsea-1.1-beta.cover.png",
+      "file": "redsea-1.1-beta-2.bin",
+      "cover": "redsea-1.1-beta-2.cover.png",
       "screen": "redsea.png",
       "repo": "https://github.com/Cirocular-Vlasenko-Daniil/Red-Sea/tree/beta",
-      "size": 442096,
-      "sha256": "768a16d1b4f0bdaf959ed0ea55166a13f4c1a00004a7039c7b0c59189e26ae06",
-      "commit": "203dff3983d6146471b862823774be83d6c3e920"
+      "size": 442112,
+      "sha256": "f0062ad198001cc6719bbaf6c2ebf88017fd4eaf015f3dbeac9ae831b989ae54",
+      "commit": "952916f0cb9f94c187c642e089b7ce1330ee98df"
     },
     {
       "id": "trajectories",
       "name": "Trajectories",
-      "version": "0.3 beta",
+      "version": "0.4 beta",
       "channel": "beta",
       "author": "Daniil Vlasenko",
       "summary": {
-        "en": "Modular slot sequencer: four slots, 19 modules, chained through ARM, one Scale Engine over everything, modulation routed slot to parameter.",
-        "ru": "Модульный слотовый секвенсер: четыре слота, 19 модулей, цепочки через ARM, общий Scale Engine, модуляция от слота к параметру."
+        "en": "Modular slot sequencer: four slots, 17 modules, chained through ARM, one Scale Engine over everything, modulation routed slot to parameter.",
+        "ru": "Модульный слотовый секвенсер: четыре слота, 17 модулей, цепочки через ARM, общий Scale Engine, модуляция от слота к параметру."
       },
       "source": "Cirocular-Vlasenko-Daniil/Trajectories@main",
-      "file": "trajectories-0.3-beta.bin",
-      "cover": "trajectories-0.3-beta.cover.png",
+      "file": "trajectories-0.4-beta.bin",
+      "cover": "trajectories-0.4-beta.cover.png",
       "repo": "https://github.com/Cirocular-Vlasenko-Daniil/Trajectories",
-      "size": 434480,
-      "sha256": "a37ce02b2ce2071d4b1774bbc95c56967f25b59c4c91fa3e3a2a0e3bad0b7223",
-      "commit": "481da91ff70f72444d56a97f31a5e4c604d590e5"
+      "size": 432000,
+      "sha256": "61f378fdd43f7a9557cc7a24b66268ea1db180580d6a7571fe0e6063d8e2fcbc",
+      "commit": "c3a0950bc4228a304be86e996b1fcf3433db31e9"
     },
     {
       "id": "maze",
@@ -76,7 +76,7 @@
     {
       "id": "template",
       "name": "TEMPLATE",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "channel": "example",
       "author": "Your Name",
       "summary": {
@@ -84,12 +84,12 @@
         "ru": "Пример SDK: кнопки, MIDI-выход, настройки, файлы, долгое нажатие энкодера — назад в HUB."
       },
       "source": "Cirocular-Vlasenko-Daniil/ESPidi-HUB/templates/arduino-firmware@main",
-      "file": "template-0.1.0.bin",
-      "cover": "template-0.1.0.cover.png",
+      "file": "template-0.1.1.bin",
+      "cover": "template-0.1.1.cover.png",
       "repo": "https://github.com/Cirocular-Vlasenko-Daniil/ESPidi-HUB/tree/main/templates/arduino-firmware",
-      "size": 397744,
-      "sha256": "0d702c4c61742ac90283df08fbbbe32da0beb59fe04dd077b0bf706b85d1b8b1",
-      "commit": "cc339af5888f574de1eefec79d965eb57c540f78"
+      "size": 397792,
+      "sha256": "5bb46fd22dd42560ca00ae7443d84f9a50ae68d728f444ac3a38a458a4807c35",
+      "commit": "9b6a7e4aaa003ffb0c08a53d6941a1494ba172d6"
     }
   ]
 }
