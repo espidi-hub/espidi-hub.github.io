@@ -256,7 +256,7 @@ footer { display: flex; gap: 18px; flex-wrap: wrap; padding-bottom: 40px; font-s
 .hero-copy h2 { font-size:clamp(32px,5.4vw,66px); line-height:1; margin:0 0 16px; max-width:15ch; font-weight:normal }
 .hero-copy p { max-width:52ch }
 .hero-photo, .photo-grid figure { margin:0 }
-.hero-photo img { display:block; width:100%; filter:grayscale(1) brightness(.86) }
+.hero-photo img { display:block; width:100%; height:auto }
 .hub-actions, .hub-nav, .profile, .plate-legend { display:flex; flex-wrap:wrap; gap:12px; align-items:center }
 .hub-actions { margin:14px 0 }
 .hub-link, .plate-tools button { padding:7px 12px; border:2px solid var(--fg); background:var(--bg); color:var(--fg); text-decoration:none; cursor:pointer }
