@@ -53,7 +53,10 @@ export class Device {
     meta.forEach((m, i) => {
       if (!m.imageSize && layout.slot[i] === E.PLACEHOLDER) layout.slot[i] = 0;  // placeholder of an empty slot
     });
-    return { hub: true, layout, meta, covers };
+    // esp_app_desc_t.version is at image offset 0x30. Avoid rewriting an up-to-date HUB.
+    const version = new TextDecoder().decode(await this.loader.readFlash(E.HUB_OFFSET + 0x30, 32)).split("\0")[0];
+    return { hub: true, layout, meta, covers, dualDisplayHub: /^0\.([2-9]|[1-9]\d+)\.|^[1-9]\d*\./.test(version),
+      displayHeight: E.unpackDisplayHeight(sector) };
   }
 
   // Images first, then the partition table and slot info — as two separate writes.

@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Faceplate v1 · ESPidi HUB</title>
+<meta name="description" content="Design copper, mask openings and silkscreen for the ESPidi v1 faceplate and download Gerbers.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ESPidi HUB">
+<meta property="og:locale" content="ru_RU">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:url" content="https://espidi-hub.github.io/faceplate.html">
+<meta property="og:title" content="Редактор фейсплейта ESPidi v1">
+<meta property="og:description" content="Открытая MIDI-платформа на ESP32-C3 от Eugene Carlo и Daniil Vlasenko: экран, энкодер, три кнопки, MIDI-вход и выход, а чем станет устройство, решает прошивка.">
+<meta property="og:image" content="https://espidi-hub.github.io/og-espidi.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Пиксельный рисунок платы ESPidi с экраном, иконой, энкодером и кнопками PLAY, TAP, PAGE">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' shape-rendering='crispEdges'%3E%3Crect width='16' height='16' fill='%23000'/%3E%3Crect x='2' y='5' width='5' height='6' fill='%23fff'/%3E%3Crect x='9' y='5' width='5' height='6' fill='none' stroke='%23fff'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+<script defer src="analytics.js"></script>
+</head>
+<body>
+<header class="top">
+  <a href="./" class="home"><canvas id="logo" width="120" height="14" aria-label="ESPidi HUB"></canvas></a>
+  <div class="heading">
+    <h1 data-i18n="faceplate">ESPidi</h1>
+  </div>
+  <div class="lang" role="group" aria-label="Language">
+    <button type="button" data-lang="ru">RU</button>
+    <button type="button" data-lang="en">EN</button>
+  </div>
+</header>
+
+<main>
+<section class="card"><h2>ESPidi v1</h2>
+  <div class="plate-layout"><div>
+    <canvas id="plate" width="372" height="228" role="img" data-i18n-label="plate_preview"></canvas>
+    <div class="plate-legend"><span class="legend-cu" data-i18n="copper"></span><span class="legend-au" data-i18n="metal"></span><span class="legend-ink" data-i18n="silk"></span></div>
+    <p class="muted" data-i18n="plate_note"></p>
+  </div>
+  <div class="plate-tools">
+    <label><span data-i18n="layer"></span><select id="layer"><option value="silk" data-i18n="silk"></option><option value="copper" data-i18n="copper"></option><option value="mask" data-i18n="openmask"></option></select></label>
+    <label><span data-i18n="image"></span><input id="picture" type="file" accept="image/png,image/jpeg,image/webp,image/bmp"></label>
+    <label><span data-i18n="raster"></span><select id="effect"><option value="bayer">Bayer 4×4</option><option value="threshold" data-i18n="threshold"></option><option value="diffuse">Floyd–Steinberg</option></select></label>
+    <label><span data-i18n="threshold"></span><input id="threshold" type="range" min="0" max="255" value="128"></label>
+    <label><span data-i18n="scale"></span><input id="scale" type="range" min="25" max="250" value="100"></label>
+    <label>X<input id="offsetX" type="range" min="-185" max="185" value="0"></label>
+    <label>Y<input id="offsetY" type="range" min="-113" max="113" value="0"></label>
+    <label class="check"><input id="invert" type="checkbox"><span data-i18n="invert"></span></label>
+    <div class="hub-actions"><button id="random" data-i18n="random"></button><button id="clear" data-i18n="clear_layer"></button></div>
+    <button class="primary" id="export" data-i18n="export_plate"></button>
+    <output aria-live="polite" id="feedback"></output>
+  </div></div>
+</section><nav class="hub-nav"><a href="composer.html" data-i18n="compose"></a><a href="./" data-i18n="device_home"></a></nav></main><footer>
+  <a href="https://github.com/Cirocular-Vlasenko-Daniil/ESPidi-HUB/blob/main/docs/FIRMWARE_GUIDE.md" data-analytics="guide" data-i18n="footer_guide">Writing firmwares</a>
+  <a href="https://github.com/Cirocular-Vlasenko-Daniil/ESPidi-HUB/blob/main/web/catalog/catalog.json" data-analytics="catalog" data-i18n="footer_catalog">Add yours to the catalog</a>
+  <a href="https://github.com/Cirocular-Vlasenko-Daniil/ESPidi-HUB" data-analytics="hub-source" data-i18n="footer_source">Source</a>
+  <span class="muted">ESPidi hardware: <a data-analytics="hardware" href="https://github.com/EugeneCarlo/ESPidi">Eugene Carlo</a></span>
+</footer>
+
+<script type="module" src="faceplate/editor.js"></script></body></html>

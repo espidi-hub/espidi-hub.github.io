@@ -171,12 +171,12 @@ const META_HEAD = 12, META_SLOT = 88, META_BODY = META_HEAD + SLOTS * META_SLOT;
 
 export const emptyMeta = () => ({ id: "", name: "", version: "", author: "", imageSize: 0, imageCrc32: 0 });
 
-export function packMeta(slots, covers = []) {
+export function packMeta(slots, covers = [], displayHeight = 32) {
   const out = new Uint8Array(META_SIZE).fill(0xFF);
   const dv = new DataView(out.buffer);
   out.set(new TextEncoder().encode(META_MAGIC), 0);
   dv.setUint16(8, 1, true);
-  dv.setUint16(10, 0, true);
+  dv.setUint16(10, displayHeight === 64 ? 64 : 0, true);
   slots.forEach((m, i) => {
     const o = META_HEAD + i * META_SLOT;
     putStr(out, o, m.id, 16);
@@ -191,10 +191,19 @@ export function packMeta(slots, covers = []) {
   return out;
 }
 
+function validMeta(data) {
+  const dv = new DataView(data.buffer, data.byteOffset, data.byteLength);
+  return getStr(data, 0, 8) === META_MAGIC && dv.getUint16(8, true) === 1 &&
+    crc32(data.subarray(0, META_BODY)) === dv.getUint32(META_BODY, true);
+}
+
+export function unpackDisplayHeight(data) {
+  return validMeta(data) && data[10] === 64 && data[11] === 0 ? 64 : 32;
+}
+
 export function unpackMeta(data) {
   const dv = new DataView(data.buffer, data.byteOffset, data.byteLength);
-  const ok = getStr(data, 0, 8) === META_MAGIC && dv.getUint16(8, true) === 1 &&
-    crc32(data.subarray(0, META_BODY)) === dv.getUint32(META_BODY, true);
+  const ok = validMeta(data);
   return Array.from({ length: SLOTS }, (_, i) => {
     if (!ok) return emptyMeta();
     const o = META_HEAD + i * META_SLOT;
@@ -418,13 +427,13 @@ export function composeLayout(sources, device = null) {
 
 // Fresh install: everything from the bootloader up to the end of the firmware area.
 // Flashed at 0x0 it also clears NVS (settings); the file partition is not part of it.
-export function buildImage({ bootloader, hub, sources }) {
+export function buildImage({ bootloader, hub, sources, displayHeight = 32 }) {
   const layout = composeLayout(sources);
   const out = new Uint8Array(APP_END).fill(0xFF);
   out.set(bootloader, BOOTLOADER_OFFSET);
   out.set(buildTable(layout.partitions()), PT_OFFSET);
   out.set(packMeta(sources.map((s) => (s.kind === "image" ? slotMetaFor(s) : emptyMeta())),
-    sources.map((s) => (s.kind === "image" ? s.cover || null : null))), META_OFFSET);
+    sources.map((s) => (s.kind === "image" ? s.cover || null : null)), displayHeight), META_OFFSET);
   out.set(hub, HUB_OFFSET);
   sources.forEach((s, i) => { if (s.kind === "image") out.set(s.data, layout.offset(i)); });
   return { image: out, layout };
@@ -433,7 +442,7 @@ export function buildImage({ bootloader, hub, sources }) {
 // Device writes. Order matters: images first, then empty-slot placeholders, then the
 // partition table and metadata — an interrupted write leaves the old table in charge and a
 // half-written slot fails validation, so the HUB starts.
-export function planWrites({ sources, device, full, bootloader, hub }) {
+export function planWrites({ sources, device, full, bootloader, hub, displayHeight = device?.displayHeight ?? 32 }) {
   const layout = composeLayout(sources, full ? null : device);
   const meta = sources.map((s, i) => {
     if (s.kind === "image") return slotMetaFor(s);
@@ -444,6 +453,9 @@ export function planWrites({ sources, device, full, bootloader, hub }) {
   const files = [];
   if (full) files.push({ address: BOOTLOADER_OFFSET, data: bootloader, label: "bootloader" },
     { address: HUB_OFFSET, data: hub, label: "HUB" });
+  if (!full && hub && displayHeight === 64 && !device.dualDisplayHub) {
+    files.push({ address: HUB_OFFSET, data: hub, label: "HUB 128×64" });
+  }
   sources.forEach((s, i) => {
     if (s.kind === "image") files.push({ address: layout.offset(i), data: s.data, label: `slot ${i + 1}` });
   });
@@ -455,6 +467,6 @@ export function planWrites({ sources, device, full, bootloader, hub }) {
     });
   }
   files.push({ address: PT_OFFSET, data: buildTable(layout.partitions()), label: "partition table" },
-    { address: META_OFFSET, data: packMeta(meta, covers), label: "slot info" });
+    { address: META_OFFSET, data: packMeta(meta, covers, displayHeight), label: "slot info" });
   return { layout, meta, covers, files, erase: full };
 }

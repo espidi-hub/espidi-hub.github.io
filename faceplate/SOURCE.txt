@@ -1,0 +1,4 @@
+Gerber_ESPIDI_PCB_ESPIDI-BLANK.zip by Eugene Carlo (GPL-3.0, see LICENSE.txt):
+https://github.com/EugeneCarlo/ESPidi/blob/7bb0888ed780300907dc0b03245c0cb21e860e2b/PCB/Gerber_ESPIDI_PCB_ESPIDI-BLANK.zip
+The archive is included unchanged as ESPIDI-BLANK.zip. The lower half is the ESPidi v1 faceplate.
+The photograph in ../photos/espidi.jpg is Image/photo.jpg from the same revision.

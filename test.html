@@ -80,13 +80,18 @@ try {
   }
 
   for (const [i, m] of v.meta.entries()) {
-    const packed = E.packMeta(m.slots.map(metaFromPy));
+    const packed = E.packMeta(m.slots.map(metaFromPy), [], m.displayHeight);
+    check("profile round trip", E.unpackDisplayHeight(packed), m.displayHeight || 32);
     check(`meta ${i}: md5`, E.md5hex(packed), m.md5);
     const back = E.unpackMeta(packed);
     check(`meta ${i}: round trip name`, back[0].name, m.slots[0].name.slice(0, 23));
   }
   check("meta: blank sector reads empty", E.unpackMeta(new Uint8Array(E.META_SIZE).fill(0xFF)),
     [E.emptyMeta(), E.emptyMeta()]);
+
+  const badProfile = E.packMeta([E.emptyMeta(), E.emptyMeta()], [], 64);
+  badProfile[188] ^= 1;
+  check("bad CRC defaults to 32", E.unpackDisplayHeight(badProfile), 32);
 
   for (const { file: name, ...img } of v.images) {
     const info = E.inspectImage(await file(name));
@@ -161,6 +166,13 @@ try {
   check("plan full: erase + order", [p.erase, p.files.map((f) => f.address)],
     [true, [0x0, 0x10000, 0x50000, 0x300000 - 0xE0000, 0x8000, 0xD000]]);
   check("plan: table and info are written last", tail(p), [0x8000, 0xD000]);
+
+  const keep = [{ kind: "keep" }, { kind: "keep" }];
+  const upgrade = E.planWrites({sources: keep, device: dev, full: false, displayHeight: 64, hub: new Uint8Array(200)});
+  check("64-row upgrade preserves NVS, both slots and files", [upgrade.erase, upgrade.files.map(f => f.address)],
+    [false, [E.HUB_OFFSET, E.PT_OFFSET, E.META_OFFSET]]);
+  const repeat = E.planWrites({sources: keep, device: {...dev, displayHeight: 64, dualDisplayHub: true}, full: false});
+  check("subsequent slot update retains panel", E.unpackDisplayHeight(repeat.files.at(-1).data), 64);
 
   const m = v.merged;
   const sources = await Promise.all(m.slots.map(async (name, i) => ({

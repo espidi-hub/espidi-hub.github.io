@@ -16,9 +16,18 @@
       "cover": "redsea-1.1.cover.png",
       "screen": "redsea.png",
       "repo": "https://github.com/Cirocular-Vlasenko-Daniil/Red-Sea",
-      "size": 442112,
-      "sha256": "27f21ebdea02f1da337158e51db09b35ac211162a03f4af655ee5dee63581ac4",
-      "commit": "279f682a17115b0d3da31d18f4ccf01d336ac80d"
+      "size": 450512,
+      "sha256": "d396e643c4ac371954b096bf265f4c5c21ea56cbc23ee97733d4479168809d16",
+      "commit": "279f682a17115b0d3da31d18f4ccf01d336ac80d",
+      "displayBuild": {
+        "baseSha256": "27f21ebdea02f1da337158e51db09b35ac211162a03f4af655ee5dee63581ac4",
+        "sha256": "d396e643c4ac371954b096bf265f4c5c21ea56cbc23ee97733d4479168809d16",
+        "commit": "279f682a17115b0d3da31d18f4ccf01d336ac80d"
+      },
+      "displayProfiles": [
+        32,
+        64
+      ]
     },
     {
       "id": "trajectories",
@@ -34,9 +43,18 @@
       "file": "trajectories-0.4-beta.bin",
       "cover": "trajectories-0.4-beta.cover.png",
       "repo": "https://github.com/Cirocular-Vlasenko-Daniil/Trajectories",
-      "size": 432000,
-      "sha256": "61f378fdd43f7a9557cc7a24b66268ea1db180580d6a7571fe0e6063d8e2fcbc",
-      "commit": "c3a0950bc4228a304be86e996b1fcf3433db31e9"
+      "size": 440368,
+      "sha256": "8b91a3efe3777719e563f734ed62fe073984b6b62db7e9d90fbfb0a011ed5b27",
+      "commit": "c3a0950bc4228a304be86e996b1fcf3433db31e9",
+      "displayBuild": {
+        "baseSha256": "61f378fdd43f7a9557cc7a24b66268ea1db180580d6a7571fe0e6063d8e2fcbc",
+        "sha256": "8b91a3efe3777719e563f734ed62fe073984b6b62db7e9d90fbfb0a011ed5b27",
+        "commit": "c3a0950bc4228a304be86e996b1fcf3433db31e9"
+      },
+      "displayProfiles": [
+        32,
+        64
+      ]
     },
     {
       "id": "maze",
@@ -53,8 +71,17 @@
         "ru": "Эзотерический тайловый секвенсер: рисуешь до четырёх маршрутов по карте 4×8, указатели ходят по ним и играют ноты из тайлов; эффекты тайлов дают ретчеты, транспонируют, поворачивают и сдвигают карту."
       },
       "commit": "67a5eba81eccc655f9a2ada87e4e80f4693c7018",
-      "size": 427936,
-      "sha256": "52542822daa1515c9d5b4acf23a1e7176c9a408dd8807c6ef78dedba505258ed"
+      "size": 436848,
+      "sha256": "236f916b3f1767b7606d7169eb4df48d407392a17aede54bbc754d06bd839a13",
+      "displayBuild": {
+        "baseSha256": "52542822daa1515c9d5b4acf23a1e7176c9a408dd8807c6ef78dedba505258ed",
+        "sha256": "236f916b3f1767b7606d7169eb4df48d407392a17aede54bbc754d06bd839a13",
+        "commit": "67a5eba81eccc655f9a2ada87e4e80f4693c7018"
+      },
+      "displayProfiles": [
+        32,
+        64
+      ]
     },
     {
       "id": "template",
@@ -70,9 +97,18 @@
       "file": "template-0.1.1.bin",
       "cover": "template-0.1.1.cover.png",
       "repo": "https://github.com/Cirocular-Vlasenko-Daniil/ESPidi-HUB/tree/main/templates/arduino-firmware",
-      "size": 397792,
-      "sha256": "5bb46fd22dd42560ca00ae7443d84f9a50ae68d728f444ac3a38a458a4807c35",
-      "commit": "0e5cb3370343fa908517590fefd3d76f8c0cab37"
+      "size": 406288,
+      "sha256": "ed97c90fedafd21daad94d2978dfaa30b1efa1f97e485186f63b383552f43551",
+      "commit": "0e5cb3370343fa908517590fefd3d76f8c0cab37",
+      "displayBuild": {
+        "baseSha256": "5bb46fd22dd42560ca00ae7443d84f9a50ae68d728f444ac3a38a458a4807c35",
+        "sha256": "ed97c90fedafd21daad94d2978dfaa30b1efa1f97e485186f63b383552f43551",
+        "commit": "0e5cb3370343fa908517590fefd3d76f8c0cab37"
+      },
+      "displayProfiles": [
+        32,
+        64
+      ]
     },
     {
       "id": "espidi_ex",
@@ -89,8 +125,17 @@
       },
       "cover": "espidi_ex-2-rebuilt-hub.cover.png",
       "commit": "b04d7e23eec46a91409af736a4ae0009551a9bbd",
-      "size": 444464,
-      "sha256": "b661024842a8543302a83b3fa43249eb7f8ca0e198ce728264fddcda57b5a134"
+      "size": 453328,
+      "sha256": "acaa0de1229611a9a6ffb08e7aa72aed48d1af80d74f1ff8679310512f0107ee",
+      "displayBuild": {
+        "baseSha256": "b661024842a8543302a83b3fa43249eb7f8ca0e198ce728264fddcda57b5a134",
+        "sha256": "acaa0de1229611a9a6ffb08e7aa72aed48d1af80d74f1ff8679310512f0107ee",
+        "commit": "b04d7e23eec46a91409af736a4ae0009551a9bbd"
+      },
+      "displayProfiles": [
+        32,
+        64
+      ]
     }
   ]
 }

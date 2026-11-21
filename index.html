@@ -3,34 +3,44 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ESPidi HUB Composer</title>
-<meta name="description" content="Put two firmwares and their covers on an ESPidi board and write them over USB from the browser.">
+<title>ESPidi HUB</title>
+<script>
+  // Published links to the old home page may already select one or both slots.
+  const slots = new URLSearchParams(location.search);
+  if (slots.has("play") || slots.has("page")) {
+    try {
+      // Carry only the referring origin across this internal redirect, never a repository URL.
+      const origin = document.referrer ? new URL(document.referrer).origin : "";
+      if (location.origin === "https://espidi-hub.github.io" && !navigator.globalPrivacyControl && navigator.doNotTrack !== "1") {
+        sessionStorage.setItem("espidi-share-referrer", JSON.stringify({origin, time: Date.now()}));
+      }
+    } catch { /* Link routing must work without storage. */ }
+    location.replace("composer.html" + location.search + location.hash);
+  }
+</script>
+<meta name="description" content="Open MIDI hardware, a USB firmware composer and a PCB faceplate editor.">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="ESPidi HUB">
 <meta property="og:locale" content="ru_RU">
 <meta property="og:locale:alternate" content="en_US">
 <meta property="og:url" content="https://espidi-hub.github.io/">
-<meta property="og:title" content="ESPidi HUB — сборщик прошивки">
-<meta property="og:description" content="Две прошивки на одной ESPidi, у каждой своя обложка. Соберите и запишите их по USB прямо из браузера.">
-<meta property="og:image" content="https://espidi-hub.github.io/og.png">
+<meta property="og:title" content="ESPidi HUB">
+<meta property="og:description" content="Открытая MIDI-платформа на ESP32-C3 от Eugene Carlo и Daniil Vlasenko: экран, энкодер, три кнопки, MIDI-вход и выход, а чем станет устройство, решает прошивка.">
+<meta property="og:image" content="https://espidi-hub.github.io/og-espidi.png">
 <meta property="og:image:type" content="image/png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="ESPIDI HUB: меню с двумя прошивками и пиксельный рисунок платы ESPidi">
+<meta property="og:image:alt" content="Пиксельный рисунок платы ESPidi с экраном, иконой, энкодером и кнопками PLAY, TAP, PAGE">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' shape-rendering='crispEdges'%3E%3Crect width='16' height='16' fill='%23000'/%3E%3Crect x='2' y='5' width='5' height='6' fill='%23fff'/%3E%3Crect x='9' y='5' width='5' height='6' fill='none' stroke='%23fff'/%3E%3C/svg%3E">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tiny5&display=swap">
 <link rel="stylesheet" href="style.css">
+<script defer src="analytics.js"></script>
 </head>
 <body>
 <header class="top">
-  <canvas id="logo" width="120" height="14" aria-label="ESPidi HUB"></canvas>
+  <a href="./" class="home"><canvas id="logo" width="120" height="14" aria-label="ESPidi HUB"></canvas></a>
   <div class="heading">
-    <h1 data-i18n="title">Firmware composer</h1>
-    <p data-i18n="subtitle"></p>
-    <p><a href="espidi.html" data-i18n="about_link">What is ESPidi</a></p>
+    <h1 data-i18n="device_home">ESPidi</h1>
   </div>
   <div class="lang" role="group" aria-label="Language">
     <button type="button" data-lang="ru">RU</button>
@@ -39,50 +49,30 @@
 </header>
 
 <main>
-  <div id="notices"></div>
-
-  <section class="slots">
-    <article class="slot card" data-slot="0"></article>
-    <article class="slot card" data-slot="1"></article>
+  <section class="landing-hero">
+    <div class="hero-copy"><h2 data-i18n="device_head"></h2><p data-i18n="device_copy"></p>
+      <div class="hub-actions"><a class="hub-link primary" href="composer.html" data-i18n="compose"></a>
+      <a class="hub-link" href="https://github.com/EugeneCarlo" data-analytics="buy" data-i18n="buy"></a></div>
+      <a href="faceplate.html" data-i18n="faceplate"></a>
+    </div>
+    <figure class="hero-photo"><img src="photos/espidi.jpg" alt="ESPidi · Eugene Carlo"></figure>
   </section>
-
-  <section class="card map">
-    <h2 data-i18n="map_title">Flash memory</h2>
-    <div id="map" class="mapbar" role="img"></div>
-    <p id="map-legend" class="legend"></p>
+  <section class="card" id="project">
+    <h2 data-i18n="project">About the project</h2>
+    <p><span data-i18n="about_a"></span><a href="https://github.com/EugeneCarlo/ESPidi" data-analytics="hardware">Eugene Carlo</a><span data-i18n="about_b"></span></p>
+    <p data-i18n="project_firmware"></p>
+    <p data-i18n="project_catalog"></p>
+    <blockquote class="quote">
+      <p data-i18n="quote"></p>
+      <cite data-i18n="quote_src"></cite>
+    </blockquote>
   </section>
-
-  <section class="bottom">
-    <section class="card preview">
-      <h2 data-i18n="preview_title">On the screen</h2>
-      <div class="tabs" id="screens" role="group"></div>
-      <div class="oled"><canvas id="oled" width="128" height="32"></canvas></div>
-      <p class="muted" id="preview-hint"></p>
-    </section>
-
-    <section class="card write">
-      <h2 data-i18n="write_title">Write</h2>
-      <div id="device"></div>
-      <div id="modes" class="modes"></div>
-      <div class="actions">
-        <button type="button" id="write" class="primary" data-i18n="write_btn">Write to ESPidi</button>
-        <button type="button" id="download" data-i18n="download_btn">Download image</button>
-      </div>
-      <div id="download-hint" class="hint" hidden></div>
-      <div class="progress" id="progress" hidden><div></div></div>
-      <pre id="log" class="log" hidden></pre>
-    </section>
-  </section>
-
-</main>
-
-<footer>
-  <a href="https://github.com/Cirocular-Vlasenko-Daniil/ESPidi-HUB/blob/main/docs/FIRMWARE_GUIDE.md" data-i18n="footer_guide">Writing firmwares</a>
-  <a href="https://github.com/Cirocular-Vlasenko-Daniil/ESPidi-HUB/blob/main/web/catalog/catalog.json" data-i18n="footer_catalog">Add yours to the catalog</a>
-  <a href="https://github.com/Cirocular-Vlasenko-Daniil/ESPidi-HUB" data-i18n="footer_source">Source</a>
-  <span class="muted">ESPidi hardware: <a href="https://github.com/EugeneCarlo/ESPidi">Eugene Carlo</a></span>
+  <section class="card"><h2 data-i18n="editions"></h2><div class="photo-grid"><figure><div class="photo-slot"><span data-i18n="photo_wait"></span></div><figcaption>ESPidi · 1</figcaption></figure><figure><div class="photo-slot"><span data-i18n="photo_wait"></span></div><figcaption>ESPidi · 2</figcaption></figure><figure><div class="photo-slot"><span data-i18n="photo_wait"></span></div><figcaption>ESPidi · 3</figcaption></figure><figure><div class="photo-slot"><span data-i18n="photo_wait"></span></div><figcaption>ESPidi · 4</figcaption></figure></div></section>
+</main><footer>
+  <a href="https://github.com/Cirocular-Vlasenko-Daniil/ESPidi-HUB/blob/main/docs/FIRMWARE_GUIDE.md" data-analytics="guide" data-i18n="footer_guide">Writing firmwares</a>
+  <a href="https://github.com/Cirocular-Vlasenko-Daniil/ESPidi-HUB/blob/main/web/catalog/catalog.json" data-analytics="catalog" data-i18n="footer_catalog">Add yours to the catalog</a>
+  <a href="https://github.com/Cirocular-Vlasenko-Daniil/ESPidi-HUB" data-analytics="hub-source" data-i18n="footer_source">Source</a>
+  <span class="muted">ESPidi hardware: <a data-analytics="hardware" href="https://github.com/EugeneCarlo/ESPidi">Eugene Carlo</a></span>
 </footer>
 
-<script type="module" src="app.js"></script>
-</body>
-</html>
+<script type="module" src="page.js"></script></body></html>

@@ -3,7 +3,7 @@
 The composer looks for `manifest.json` here:
 
 ```json
-{ "version": "0.1.0", "bootloader": "bootloader.bin", "hub": "espidi_hub.bin" }
+{ "version": "0.2.0", "bootloader": "bootloader.bin", "hub": "espidi_hub.bin" }
 ```
 
 and the two files it names — `hub/build/bootloader/bootloader.bin` and `hub/build/espidi_hub.bin`

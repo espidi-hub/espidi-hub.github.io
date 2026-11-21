@@ -199,6 +199,28 @@
     }
    ],
    "md5": "daedf21298ad217e9ed7cc3d1a35901c"
+  },
+  {
+   "slots": [
+    {
+     "id": "redsea",
+     "name": "RED SEA",
+     "version": "1.1",
+     "author": "Daniil Vlasenko",
+     "image_size": 431488,
+     "image_crc32": 3046571511
+    },
+    {
+     "id": "xxxxxxxxxxxxxxxxxxxx",
+     "name": "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNN",
+     "version": "1.0.0-very-long-version",
+     "author": "",
+     "image_size": 1,
+     "image_crc32": 2
+    }
+   ],
+   "displayHeight": 64,
+   "md5": "4670dc00682ecab9e0e971ec8c65eb80"
   }
  ],
  "images": [
@@ -218,8 +240,8 @@
    "file": "redsea-1.1.bin",
    "chip_id": 5,
    "project": "arduino-lib-builder",
-   "app_version": "6671d0b",
-   "idf_version": "v5.5.5",
+   "app_version": "afa5cdd",
+   "idf_version": "v5.5-1-gb66b5448e0",
    "desc": {
     "id": "redsea",
     "name": "RED SEA",
@@ -235,8 +257,8 @@
    "file": "template-0.1.1.bin",
    "chip_id": 5,
    "project": "arduino-lib-builder",
-   "app_version": "6671d0b",
-   "idf_version": "v5.5.5",
+   "app_version": "afa5cdd",
+   "idf_version": "v5.5-1-gb66b5448e0",
    "desc": {
     "id": "template",
     "name": "TEMPLATE",
@@ -338,16 +360,16 @@
     "name": "RED SEA",
     "version": "1.1",
     "author": "Daniil Vlasenko",
-    "image_size": 442112,
-    "image_crc32": 853290266
+    "image_size": 450512,
+    "image_crc32": 3762931137
    },
    {
     "id": "template",
     "name": "TEMPLATE",
     "version": "0.1.1",
     "author": "ESPidi HUB",
-    "image_size": 397792,
-    "image_crc32": 4034207621
+    "image_size": 406288,
+    "image_crc32": 2262712110
    }
   ],
   "covers": [
@@ -355,7 +377,7 @@
    "00000000000000000000000000000000000000000000000000003ffffffc0000000020000004000000002000000400000003e7000007c0000003e7000007c000000027000004000000002000000400000003e0000007c0000003e0000007c0000000200000040000000020f7110400000003e1049207c0000003e1045407c000000020e45804000000002014540400000003e0149207c0000003e1e71107c000000020000004000000002000000400000003e0000007c0000003e0000007c000000020000004000000002000000400000003e0000007c0000003e0000007c00000003ffffffc0000000000000000000000000000000000000000000000000000"
   ],
   "size": 3145728,
-  "md5": "598518275eaad2926ee2b5a868d6879e"
+  "md5": "ec02199881400ed6c3052590b08bb4ea"
  },
  "specs": [
   {

@@ -7,7 +7,7 @@ import * as G from "./github.js";
 import { drawText, cssVar, renderLogo } from "./pixels.js";
 
 const BUTTON = ["PLAY", "PAGE"];
-const HUB_VERSION = "0.1.0";
+const HUB_VERSION = "0.2.0";
 
 const state = {
   catalog: [],
@@ -21,6 +21,8 @@ const state = {
     { mode: "catalog", pick: 0, file: null, name: "", version: "", cover: { mode: "auto" }, gh: { input: "" } },
     { mode: "empty", pick: -1, file: null, name: "", version: "", cover: { mode: "auto" }, gh: { input: "" } },
   ],
+  displayHeight: 32,
+  profileChosen: false,
   screen: "menu",    // OLED preview: "menu" or a slot index (its start screen)
   device: null,
   deviceState: null, // { hub: false } | { hub: true, layout, meta, covers }
@@ -296,9 +298,16 @@ function renderOled() {
   $("#screens").innerHTML = screens.map((k) => `<button type="button" data-screen="${k}" aria-pressed="${state.screen === k}">${
     k === "menu" ? esc(t("screen_menu")) : BUTTON[k]}</button>`).join("");
   $("#preview-hint").textContent = state.screen === "menu" ? t("preview_hint") : t("preview_start", { button: BUTTON[state.screen] });
-  const ctx = $("#oled").getContext("2d");
+  const canvas = $("#oled");
+  canvas.height = state.displayHeight;
+  document.querySelectorAll("[data-height]").forEach((b) => {
+    b.setAttribute("aria-pressed", String(Number(b.dataset.height) === state.displayHeight));
+    b.disabled = state.busy;
+  });
+  const ctx = canvas.getContext("2d");
   ctx.fillStyle = cssVar("--oled-bg", "#000");
-  ctx.fillRect(0, 0, 128, 32);
+  ctx.fillRect(0, 0, 128, canvas.height);
+  ctx.translate(0, (canvas.height - 32) / 2);
   ctx.fillStyle = cssVar("--oled-fg", "#fff");
   if (state.screen === "menu") drawMenu(ctx);
   else drawStart(ctx, state.screen);
@@ -377,7 +386,7 @@ function renderSlot(i) {
           ${r.cover ? `<canvas class="thumb" width="64" height="32" data-repo-thumb aria-hidden="true"></canvas>` : ""}
           <span class="name">${esc(meta.name)}<span class="tag">github</span></span>
           <span class="meta">${esc(meta.version)} · ${fmt(r.data.length)}</span>
-          <span class="summary">${summary ? `${esc(summary)}<br>` : ""}<a href="${esc(G.webUrl(r.spec, r.sha))}" target="_blank" rel="noopener">${
+          <span class="summary">${summary ? `${esc(summary)}<br>` : ""}<a data-analytics="firmware-repo" href="${esc(G.webUrl(r.spec, r.sha))}" target="_blank" rel="noopener">${
             esc(t("gh_from", { repo: `${r.spec.owner}/${r.spec.repo}`, at: r.sha ? r.sha.slice(0, 7) : r.at }))} ↗</a></span>
         </div>`;
     }
@@ -519,6 +528,10 @@ function renderMap() {
 function renderNotices() {
   const n = [];
   if (!webSerialSupported()) n.push(t("no_serial"));
+  if (state.displayHeight === 64 && state.slots.some(s => ["github", "file", "keep"].includes(s.mode) ||
+      (s.mode === "catalog" && state.catalog[s.pick] && !state.catalog[s.pick].displayProfiles?.includes(64)))) {
+    n.push(t("display_legacy_hint"));
+  }
   if (!state.hub) n.push(t("hub_missing"));
   $("#notices").innerHTML = n.map((x) => `<div class="notice">${esc(x)}</div>`).join("");
 }
@@ -543,7 +556,7 @@ function renderWrite() {
 
   const { ready, fits, sources } = composition();
   const valid = ready && fits;
-  const needsHub = fullInstall();
+  const needsHub = fullInstall() || (state.displayHeight === 64 && !state.deviceState?.dualDisplayHub);
   $("#write").disabled = state.busy || !state.device || !valid || (needsHub && !state.hub);
   $("#download").disabled = state.busy || !valid || !state.hub || sources.some((s) => s?.kind === "keep");
 
@@ -595,7 +608,7 @@ async function ensureData(k) {
   state.data.set(k, "loading");
   try {
     const fw = state.catalog[k];
-    const res = await fetch(`catalog/${fw.file}`);
+    const res = await fetch(`catalog/${fw.file}${fw.sha256 ? "?v=" + fw.sha256 : ""}`);
     if (!res.ok) throw new Error(`${res.status} ${fw.file}`);
     const data = new Uint8Array(await res.arrayBuffer());
     if (fw.sha256 && (await sha256hex(data)) !== fw.sha256) throw new Error("sha");
@@ -608,7 +621,7 @@ async function ensureData(k) {
 
 async function loadCatalog() {
   try {
-    state.catalog = (await (await fetch("catalog/catalog.json")).json()).firmwares;
+    state.catalog = (await (await fetch("catalog/catalog.json", { cache: "no-cache" })).json()).firmwares;
   } catch {
     state.catalog = [];
   }
@@ -621,7 +634,13 @@ async function loadHub() {
     const res = await fetch("hub/manifest.json", { cache: "no-store" });
     if (!res.ok) throw new Error("no manifest");
     const m = await res.json();
-    const get = async (name) => new Uint8Array(await (await fetch(`hub/${name}`)).arrayBuffer());
+    const get = async (name) => {
+      const res = await fetch(`hub/${name}`, { cache: "no-cache" });
+      if (!res.ok) throw Error("HUB image unavailable");
+      const data = new Uint8Array(await res.arrayBuffer());
+      if (data[0] !== 0xe9 || data[12] !== 5) throw Error("Not an ESP32-C3 image");
+      return data;
+    };
     state.hub = { bootloader: await get(m.bootloader), hub: await get(m.hub), version: m.version };
   } catch {
     state.hub = null;
@@ -658,6 +677,7 @@ async function connect() {
     await dev.connect();
     state.device = dev;
     state.deviceState = await dev.readState();
+    if (state.deviceState.hub && !state.profileChosen) state.displayHeight = state.deviceState.displayHeight;
     state.full = false;
     keepInstalled();
   } catch (e) {
@@ -673,6 +693,7 @@ async function disconnect() {
   await state.device?.disconnect();
   state.device = null;
   state.deviceState = null;
+  state.profileChosen = false;
   state.slots.forEach((s) => { if (s.mode === "keep") s.mode = "empty"; });
   render();
 }
@@ -684,7 +705,7 @@ async function write() {
     log(t("cancelled"));
     return;
   }
-  const plan = E.planWrites({ sources, device: state.deviceState, full, bootloader: state.hub?.bootloader, hub: state.hub?.hub });
+  const plan = E.planWrites({ sources, device: state.deviceState, full, bootloader: state.hub?.bootloader, hub: state.hub?.hub, displayHeight: state.displayHeight });
   const total = plan.files.reduce((a, f) => a + f.data.length, 0);
   const start = new Map();
   plan.files.reduce((acc, f) => (start.set(f, acc), acc + f.data.length), 0);
@@ -714,7 +735,7 @@ async function write() {
 
 function download() {
   const { sources } = composition();
-  const { image } = E.buildImage({ bootloader: state.hub.bootloader, hub: state.hub.hub, sources });
+  const { image } = E.buildImage({ bootloader: state.hub.bootloader, hub: state.hub.hub, sources, displayHeight: state.displayHeight });
   const url = URL.createObjectURL(new Blob([image], { type: "application/octet-stream" }));
   const a = Object.assign(document.createElement("a"), { href: url, download: "espidi-custom.bin" });
   document.body.append(a);
@@ -728,6 +749,13 @@ function download() {
 // ---------------------------------------------------------------------------
 // Events
 // ---------------------------------------------------------------------------
+document.querySelectorAll("[data-height]").forEach((b) => b.addEventListener("click", () => {
+  state.profileChosen = true;
+  state.displayHeight = Number(b.dataset.height);
+  state.downloaded = false;
+  render();
+}));
+
 document.querySelector(".slots").addEventListener("click", (e) => {
   const card = e.target.closest(".slot");
   if (!card || state.busy) return;

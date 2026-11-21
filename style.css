@@ -1,10 +1,12 @@
+@font-face { font-family:"Tiny5"; src:url("vendor/tiny5/Tiny5-Regular.ttf") format("truetype"); font-style:normal; font-weight:400; font-display:swap }
+
 /* ESPidi HUB composer — black and white, in the style of the ESPidi OLED.
    Patterns (px/*.svg) are 4x4 masks painted with the foreground colour. */
 
 :root {
-  --fg: #fff;
+  --fg: #deded8;
   --bg: #000;
-  --oled-fg: #fff;
+  --oled-fg: #deded8;
   --oled-bg: #000;
   --font: "Tiny5", ui-monospace, monospace;
   --font-head: var(--font);
@@ -247,3 +249,31 @@ button:disabled { cursor: not-allowed; border-style: dashed; background: none; c
 @media (max-width: 900px) { .about-body { grid-template-columns: minmax(0, 1fr); } }
 
 footer { display: flex; gap: 18px; flex-wrap: wrap; padding-bottom: 40px; font-size: 0.9em; }
+
+/* The landing and PCB editor use the same two-colour UI as the composer. */
+.landing-hero, .plate-layout { display:grid; grid-template-columns:minmax(0,1.2fr) minmax(0,1fr); gap:24px; align-items:center }
+.landing-hero { border-block:2px solid var(--fg); padding:24px 0 }
+.hero-copy h2 { font-size:clamp(32px,5.4vw,66px); line-height:1; margin:0 0 16px; max-width:15ch; font-weight:normal }
+.hero-copy p { max-width:52ch }
+.hero-photo, .photo-grid figure { margin:0 }
+.hero-photo img { display:block; width:100%; filter:grayscale(1) brightness(.86) }
+.hub-actions, .hub-nav, .profile, .plate-legend { display:flex; flex-wrap:wrap; gap:12px; align-items:center }
+.hub-actions { margin:14px 0 }
+.hub-link, .plate-tools button { padding:7px 12px; border:2px solid var(--fg); background:var(--bg); color:var(--fg); text-decoration:none; cursor:pointer }
+.hub-link.primary, .plate-tools .primary { color:var(--bg); background:var(--fg) }
+.photo-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px }
+.photo-slot { aspect-ratio:4/3; display:grid; place-items:center; border:1px dashed #757570; color:#b3b3ae }
+#plate { display:block; width:100%; image-rendering:pixelated; background:#101213 }
+.plate-tools { display:grid; gap:8px }
+.plate-tools label:not(.check) { display:grid; grid-template-columns:minmax(80px,1fr) minmax(0,1.4fr); gap:8px; align-items:center }
+.plate-tools input, .plate-tools select { width:100%; min-width:0; font:inherit; accent-color:var(--fg) }
+.plate-tools .check input { width:auto }
+.plate-legend { font-size:14px; margin-top:8px }
+.plate-legend span:before { content:""; display:inline-block; width:10px; height:10px; margin-right:5px; background:var(--swatch) }
+.legend-cu { --swatch:#62796b } .legend-au { --swatch:#c9ae75 } .legend-ink { --swatch:#deded8 }
+.profile { margin-bottom:8px }
+@media(max-width:720px) {
+  .landing-hero, .plate-layout { grid-template-columns:1fr }
+  .photo-grid { grid-template-columns:repeat(2,minmax(0,1fr)) }
+}
+#plate { touch-action:none; cursor:crosshair }
