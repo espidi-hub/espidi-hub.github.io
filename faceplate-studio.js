@@ -11,6 +11,11 @@ function initialLanguage(){
 }
 let language=initialLanguage();
 const english={
+ 'По цветам дизайна':'Original materials','Слой платы':'PCB layer','Окна маски':'Mask openings','Медь':'Copper',
+ 'Не удалось собрать Gerber ZIP.':'Could not build the Gerber ZIP.',
+ 'Чёрное добавляет материал или окно маски. В режиме «Умножение» белое сохраняет рисунок этого слоя.':'Black adds material or opens the mask. In Multiply mode, white preserves artwork on this layer.',
+ 'Скачать Gerber ZIP':'Download Gerber ZIP','Точно':'Exact','Медь под маской':'Masked copper','Без рисунка':'Bare board','Окно без меди':'Open mask without copper','Вся плата':'Whole board','Вид платы':'Board view',
+
  'Студия фейсплейтов':'Faceplate Studio','Разделы':'Sections','язык':'language',
  'Библиотека':'Library','Редактор':'Editor','Генератор':'Generator','лицевая панель':'front panel',
  'Библиотека фейсплейтов':'Faceplate library','Пустой фейсплейт':'Blank faceplate','Новый фейсплейт':'Untitled faceplate',
@@ -81,7 +86,7 @@ function historyButton(back){
  return '<button class="ghost" '+(enabled?'':'disabled ')+'onclick="step('+back+')">'+(back?'↶ Отменить':'↷ Повторить')+'</button>'
 }
 window.addEventListener('keydown',e=>{
- if(page!==1||drag||e.altKey||!(e.metaKey||e.ctrlKey)||e.target.closest('input,textarea,select,[contenteditable="true"]'))return;
+ if(page!==1||drag||e.altKey||!(e.metaKey||e.ctrlKey)||e.target.closest('input:not([type=range]),textarea,select,[contenteditable="true"]'))return;
  const z=e.code==='KeyZ'||e.key.toLowerCase()==='z',y=e.ctrlKey&&!e.shiftKey&&(e.code==='KeyY'||e.key.toLowerCase()==='y');
  if(!z&&!y)return;
  e.preventDefault();step(z&&!e.shiftKey)
@@ -119,17 +124,56 @@ function board(p,hit=false){
 }
 const button=(s,fn,cls='primary')=>'<button class="'+cls+'" onclick="'+fn+'">'+s+'</button>';
 function header(s,b){return '<header><h1>'+esc(s)+'</h1>'+b+'</header>'}
-function stage(p,hit=false){return '<div class="view"><div class="bar"><span>Предпросмотр</span><small>ESPidi v1</small></div><div class="stage '+(hit?'active':'')+'"><div class="ruler">0 <i></i>25<i></i>50<i></i>75 мм</div><div class="big">'+board(p,hit)+'</div><div class="measure"><i></i>74,8 × 45,8 мм<i></i></div></div><footer><span class="sw cu"></span>Медь под маской　<span class="sw au"></span>Открытый металл　<span class="sw si"></span>Шелкография</footer></div>'}
-function openProject(p){undoStack.length=0;redoStack.length=0;project=structuredClone(p);chosen=project.items.length?0:-1;go(1)}
+function stage(p,hit=false){return '<div class="view"><div class="bar"><span>Предпросмотр</span>'+(hit?'<select id="view-film" aria-label="Вид платы" onchange="previewFilm=this.value;render()">'+options([['','Вся плата'],...pcbLayers.map(k=>[k,filmLabels[k]])],previewFilm)+'</select>':'<small>ESPidi v1</small>')+'</div><div class="stage '+(hit?'active':'')+'"><div class="ruler">0 <i></i>25<i></i>50<i></i>75 мм</div><div class="big">'+(hit?studioBoard(p,true,previewFilm):board(p))+'</div><div class="measure"><i></i>74,8 × 45,8 мм<i></i></div></div><footer><span class="sw cu"></span>Медь под маской　<span class="sw au"></span>Открытый металл　<span class="sw si"></span>Шелкография</footer></div>'}
+function openProject(p){previewFilm='';undoStack.length=0;redoStack.length=0;project=structuredClone(p);chosen=project.items.length?0:-1;go(1)}
 function go(i){page=i;render();window.scrollTo(0,0)}
 function gallery(){return header('Библиотека фейсплейтов',button('+ Пустой фейсплейт',"openProject({name:'Новый фейсплейт',items:[]})",'ghost'))+'<div class="bar"><span>Готовые дизайны</span><small>Выбери панель, чтобы открыть её в редакторе.</small></div><div class="gallery">'+NAMES.map((name,i)=>'<button class="preset" onclick="openProject(preset('+i+'))"><div class="mat">'+board(preset(i))+'</div><div class="caption"><div><h2>'+name+'</h2><p>'+DESCS[i]+'</p></div><span class="arrow">↗</span></div></button>').join('')+'</div>'}
 function options(list,value){return list.map(([v,t])=>'<option value="'+esc(v)+'" '+(v===value?'selected':'')+'>'+esc(t)+'</option>').join('')}
-function numeric(key,title,min,max,step){const o=project.items[chosen];return '<label class="row">'+title+'<input aria-label="'+title+'" type="number" min="'+min+'" max="'+max+'" step="'+step+'" value="'+o[key]+'" onchange="changeNumber(this,\''+key+'\')"></label>'}
-function changeNumber(el,key){const o=project.items[chosen];if(!o)return;if(!el.value||!el.checkValidity()){el.value=o[key];return}if(o[key]===el.valueAsNumber)return;record(capture());o[key]=el.valueAsNumber;render()}
+function numeric(key,title,min,max,step){
+ const attrs=' data-param="'+key+'" min="'+min+'" max="'+max+'" step="'+step+'" value="'+project.items[chosen][key]+'"';
+ return '<div class="transform-row"><label for="slide-'+key+'">'+title+'</label><div><input type="range" id="slide-'+key+'"'+attrs+'><input type="number" aria-label="Точно: '+title+'"'+attrs+'></div></div>'
+}
+function syncPlacement(i){
+ const o=project.items[i],svg=main.querySelector('.big svg');
+ svg.querySelectorAll('[data-transform="'+i+'"],[data-item="'+i+'"]').forEach(el=>el.setAttribute('transform',tx(o)));
+ if(o.role===0)svg.querySelector('[data-stencil-source]')?.setAttribute('transform',tx(o));
+ for(const input of main.querySelectorAll('[data-param]')){
+  if(input!==document.activeElement || drag) input.value=o[input.dataset.param];
+ }
+}
+function updateHistoryButtons(){
+ main.querySelector('.history-actions button:first-child').disabled=!undoStack.length;
+ main.querySelector('.history-actions button:nth-child(2)').disabled=!redoStack.length;
+}
+let adjustment=null;
+function finishAdjustment(){
+ if(!adjustment)return;
+ const {before,i,key}=adjustment;adjustment=null;
+ if(project.items[i]?.[key]!==before.items[i][key])record(before);
+ if(page===1)updateHistoryButtons();
+}
+main.addEventListener('input',e=>{
+ const el=e.target,key=el.dataset.param,o=project.items[chosen];
+ if(!key||!o||!el.value||!el.validity.valid)return;
+ if(!adjustment)adjustment={before:capture(),i:chosen,key};
+ o[key]=el.valueAsNumber;syncPlacement(chosen)
+});
+main.addEventListener('change',e=>{if(e.target.dataset.param)finishAdjustment()});
+main.addEventListener('focusout',e=>{
+ const el=e.target,key=el.dataset.param;
+ if(key&&project.items[chosen]){finishAdjustment();el.value=project.items[chosen][key]}
+});
+function setPcb(key){
+ const o=project.items[chosen];record(capture());o.pcb=key;render()
+}
+function pcbOptions(o){
+ const choices=o.imported?pcbLayers:['auto',...pcbLayers];
+ return '<label class="row">Слой платы<select id="pcb" onchange="setPcb(this.value)">'+options(choices.map(k=>[k,filmLabels[k]]),o.pcb||(o.imported?'silk':'auto'))+'</select></label>'
+}
 function selectObject(i){chosen=i;render()}
 function editor(){
  const o=project.items[chosen];
- return header(project.name,'<div class="history-actions">'+historyButton(true)+historyButton(false)+button('↓ Скачать превью SVG','downloadSVG()','ghost')+'</div>')+'<div class="work">'+stage(project,true)+'<aside><div class="asidehead">Объекты</div>'+project.items.map((a,i)=>'<button class="obj '+(i===chosen?'selected':'')+'" onclick="selectObject('+i+')"><span>◇</span><b '+(a.imported?'data-verbatim':'')+'>'+esc(a.name)+'</b></button>').reverse().join('')+'<button class="import" onclick="document.getElementById(\'file\').click()">+ Добавить изображение</button><input id="file" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" hidden onchange="importFile(this.files[0])">'+(o?'<div class="asidehead sub">Свойства объекта</div><label class="row">Наложение<select onchange="setBlend(this.value)">'+options([['normal','Обычный'],['multiply','Умножение']],o.blend)+'</select></label>'+numeric('x','Сдвиг X, мм',-150,150,.1)+numeric('y','Сдвиг Y, мм',-150,150,.1)+numeric('scale','Масштаб, %',1,500,1)+numeric('angle','Поворот, °',-360,360,1)+'<div class="genbtn">'+button('Убрать объект','removeObject()','ghost')+'</div>':'')+'<p class="hint">Перетаскивай объект на панели. SVG остаётся векторным, а PNG перемещается без повторного растрирования.</p></aside></div><p class="notice">Прототип: скачивается визуальное превью, не производственный Gerber.</p>'
+ return header(project.name,'<div class="history-actions">'+historyButton(true)+historyButton(false)+button('↓ Скачать Gerber ZIP','downloadGerber(this)')+button('↓ Скачать превью SVG','downloadSVG()','ghost')+'</div>')+'<div class="work">'+stage(project,true)+'<aside><div class="asidehead">Объекты</div>'+project.items.map((a,i)=>'<button class="obj '+(i===chosen?'selected':'')+'" onclick="selectObject('+i+')"><span>◇</span><b '+(a.imported?'data-verbatim':'')+'>'+esc(a.name)+'</b></button>').reverse().join('')+'<button class="import" onclick="document.getElementById(\'file\').click()">+ Добавить изображение</button><input id="file" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" hidden onchange="importFile(this.files[0])">'+(o?'<div class="asidehead sub">Свойства объекта</div>'+pcbOptions(o)+'<label class="row">Наложение<select onchange="setBlend(this.value)">'+options([['normal','Обычный'],['multiply','Умножение']],o.blend)+'</select></label>'+numeric('x','Сдвиг X, мм',-150,150,.1)+numeric('y','Сдвиг Y, мм',-150,150,.1)+numeric('scale','Масштаб, %',1,500,1)+numeric('angle','Поворот, °',-360,360,1)+'<div class="genbtn">'+button('Убрать объект','removeObject()','ghost')+'</div>':'')+'<p class="hint">Перетаскивай объект на панели. SVG остаётся векторным, а PNG перемещается без повторного растрирования.</p></aside></div><p class="notice">Чёрное добавляет материал или окно маски. В режиме «Умножение» белое сохраняет рисунок этого слоя.</p>'
 }
 function removeObject(){if(chosen<0)return;record(capture());project.items.splice(chosen,1);chosen=Math.min(chosen,project.items.length-1);render()}
 async function importFile(file){
@@ -141,21 +185,22 @@ async function importFile(file){
  const ratio=im.naturalWidth/im.naturalHeight;if(!(ratio>0))throw Error();
  const w=Math.min(380,220*ratio),h=w/ratio;
  const obj=item(file.name,'<image x="'+(374-w/2)+'" y="'+(185-h/2)+'" width="'+w+'" height="'+h+'" href="'+esc(src)+'"/>');
- if(target!==project)return;obj.imported=true;record(capture());target.items.push(obj);chosen=target.items.length-1;render()
+ if(target!==project)return;obj.imported=true;obj.box={x:374-w/2,y:185-h/2,w,h};obj.pcb=previewFilm||'silk';obj.blend='multiply';record(capture());target.items.push(obj);chosen=target.items.length-1;render()
  }catch{alert(translate('Не удалось открыть изображение. Попробуй SVG, PNG, JPEG или WebP.'))}
 }
 function point(svg,e){const pt=new DOMPoint(e.clientX,e.clientY);return pt.matrixTransform(svg.getScreenCTM().inverse())}
 main.addEventListener('pointerdown',e=>{
- const g=e.target.closest('.stage.active [data-item]');if(drag||!g||e.button!==0)return;
- const svg=g.ownerSVGElement,i=Number(g.dataset.item),o=project.items[i],before=capture();chosen=i;drag={svg,g,i,before,start:point(svg,e),x:o.x,y:o.y,id:e.pointerId};svg.setPointerCapture(e.pointerId);e.preventDefault()
+ const svg=e.target.closest('.stage.active svg.board');
+ if(drag||!svg||e.button!==0)return;
+ const target=e.target.closest('[data-item]'),i=target?Number(target.dataset.item):chosen;
+ const o=project.items[i];if(!o)return;
+ const before=capture();chosen=i;drag={svg,i,before,start:point(svg,e),x:o.x,y:o.y,id:e.pointerId};svg.setPointerCapture(e.pointerId);e.preventDefault()
 });
 main.addEventListener('pointermove',e=>{
  if(!drag||drag.id!==e.pointerId)return;const d=drag,o=project.items[d.i],pt=point(d.svg,e);
  const coord=v=>Math.max(-150,Math.min(150,Math.round(v*10)/10));
  o.x=coord(d.x+(pt.x-d.start.x)/10);o.y=coord(d.y+(pt.y-d.start.y)/10);
- d.g.transform.baseVal.getItem(0).setTranslate(o.x*10,o.y*10);
- if(o.kind==='legend')d.svg.querySelector('[data-letter-gap="'+d.i+'"]')?.setAttribute('transform',tx(o));
- if(o.role===0)d.svg.querySelector('[data-stencil-source]')?.setAttribute('transform',tx(o))
+ syncPlacement(d.i);
 });
 for(const ev of ['pointerup','pointercancel','lostpointercapture'])main.addEventListener(ev,e=>{if(drag&&drag.id===e.pointerId){
  const d=drag,o=project.items[d.i];drag=null;
@@ -163,7 +208,7 @@ for(const ev of ['pointerup','pointercancel','lostpointercapture'])main.addEvent
  render()
 }});
 function downloadSVG(){
- const svg=document.querySelector('.big svg').cloneNode(true);svg.removeAttribute('class');svg.setAttribute('width','748');svg.setAttribute('height','458');
+ const svg=new DOMParser().parseFromString(studioBoard(project), 'image/svg+xml').documentElement;svg.removeAttribute('class');svg.setAttribute('width','748');svg.setAttribute('height','458');
  const url=URL.createObjectURL(new Blob([new XMLSerializer().serializeToString(svg)],{type:'image/svg+xml'}));const a=document.createElement('a');a.href=url;a.download=translate(project.name)+'-preview.svg';a.click();setTimeout(()=>URL.revokeObjectURL(url),1500)
 }
 function random(seed){let s=seed>>>0;return ()=>{s=(Math.imul(1664525,s)+1013904223)>>>0;return s/4294967296}}
@@ -214,7 +259,10 @@ function shapeGeometry(o){
  // Everything but transparency becomes a wide white channel, including filled cells and dots.
  return o.svg.replace(/(fill|stroke)="(?!none")[^"]+"/g,'$1="white"').replace(/stroke-width="([^"]+)"/g,(m,w)=>'stroke-width="'+(12+Number(w)*2)+'"')
 }
-function tx(o){return 'translate('+o.x*10+' '+o.y*10+') rotate('+o.angle+' 374 229) translate(374 229) scale('+o.scale/100+') translate(-374 -229)'}
+function tx(o){
+ const cx=374,cy=o.imported?185:229;
+ return 'translate('+o.x*10+' '+o.y*10+') translate('+cx+' '+cy+') rotate('+o.angle+') scale('+o.scale/100+') translate('+(-cx)+' '+(-cy)+')'
+}
 function joinFields(p){
  const j=p.join,{cx,cy,r,flip,mode}=j;
  const axis=x=>flip?748-x:x;
